@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SL Premium Emoji Creator</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0e1621;
+            color: #ffffff;
+            margin: 0;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            box-sizing: border-box;
+        }
+        h3 { margin: 0 0 10px 0; font-weight: 500; color: #5288c1; text-align: center; }
+        textarea {
+            width: 100%;
+            height: 120px;
+            background: #17212b;
+            color: #fff;
+            border: 1px solid #24303f;
+            border-radius: 10px;
+            padding: 12px;
+            box-sizing: border-box;
+            font-size: 16px;
+            resize: none;
+            outline: none;
+        }
+        textarea:focus { border-color: #5288c1; }
+        .section-title { font-size: 14px; color: #708499; margin: 15px 0 8px 0; font-weight: bold; }
+        .emoji-container {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 8px;
+            overflow-y: auto;
+            flex-grow: 1;
+            padding-bottom: 70px;
+        }
+        .emoji-card {
+            background: #17212b;
+            border: 1px solid #24303f;
+            padding: 12px 0;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 26px;
+            text-align: center;
+            transition: all 0.2s ease;
+            user-select: none;
+        }
+        .emoji-card:active {
+            background: #24303f;
+            transform: scale(0.95);
+        }
+        .btn-container {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: #0e1621;
+            padding: 10px 15px;
+            box-sizing: border-box;
+        }
+        button {
+            background: #2481cc;
+            color: white;
+            border: none;
+            padding: 14px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 10px;
+            cursor: pointer;
+            width: 100%;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
+        button:active { background: #1f71b2; }
+    </style>
+</head>
+<body>
+
+    <h3>Create Premium Post</h3>
+    <textarea id="postText" placeholder="এখানে আপনার পোস্টের টেক্সট লিখুন..."></textarea>
+
+    <div class="section-title">TAP TO INSERT PREMIUM EMOJI</div>
+    <div class="emoji-container" id="emojiGrid"></div>
+
+    <div class="btn-container">
+        <button id="sendBtn">✨ Generate & Send to Bot</button>
+    </div>
+
+    <script>
+        const tg = window.Telegram.WebApp;
+        tg.expand();
+
+        // আপনার দেওয়া সম্পূর্ণ ইমোজি ডাটাবেস
+        const emojiData = [
+            {"id": "6136390831457702944", "symbol": "🧐"},
+            {"id": "6129550284290006595", "symbol": "🧐"},
+            {"id": "5242566003530932529", "symbol": "🧐"},
+            {"id": "5368524539485496342", "symbol": "🧐"},
+            {"id": "5377436326041754852", "symbol": "🧐"},
+            {"id": "5406720439563067247", "symbol": "🧐"},
+            {"id": "5231249439015838802", "symbol": "🧐"},
+            {"id": "5402461597237004802", "symbol": "🧐"},
+            {"id": "6298711741656205491", "symbol": "🧐"},
+            {"id": "5283235396749113692", "symbol": "🧐"},
+            {"id": "5395860030639585952", "symbol": "⬆️"},
+            {"id": "6118422934559134491", "symbol": "⬆️"},
+            {"id": "6118225782675347652", "symbol": "⬆️"},
+            {"id": "6269089154647200653", "symbol": "⬆️"},
+            {"id": "6294154553721886084", "symbol": "⬆️"},
+            {"id": "6296484719508852786", "symbol": "⬆️"},
+            {"id": "6129523887421006760", "symbol": "👆"},
+            {"id": "6224269195228485556", "symbol": "👆"},
+            {"id": "6278132564771216039", "symbol": "👆"},
+            {"id": "6059772059460834297", "symbol": "👆"},
+            {"id": "6057464953353278777", "symbol": "👆"},
+            {"id": "5251229536682531523", "symbol": "👆"},
+            {"id": "6294004517629335751", "symbol": "👆"},
+            {"id": "5420323339723881652", "symbol": "⚠️"},
+            {"id": "6129782440157256336", "symbol": "⚠️"},
+            {"id": "6271786398404055377", "symbol": "⚠️"},
+            {"id": "5447644880824181073", "symbol": "⚠️"},
+            {"id": "6188102443859973984", "symbol": "⚠️"},
+            {"id": "6278539469972838384", "symbol": "⚠️"},
+            {"id": "6057604827553209115", "symbol": "⚠️"},
+            {"id": "6059724471223194869", "symbol": "⚠️"},
+            {"id": "6337081377455872512", "symbol": "⚠️"},
+            {"id": "6275791747465352530", "symbol": "⚠️"},
+            {"id": "6276132901012640832", "symbol": "⚠️"},
+            {"id": "6280341320422658619", "symbol": "⚠️"},
+            {"id": "6278027836288668069", "symbol": "⚠️"},
+            {"id": "6278063308423565890", "symbol": "⚠️"},
+            {"id": "6280571831317435060", "symbol": "⚠️"},
+            {"id": "6280766663918883593", "symbol": "⚠️"},
+            {"id": "6280690578573235093", "symbol": "⚠️"},
+            {"id": "6132092002986103018", "symbol": "⚠️"},
+            {"id": "4956611513369494230", "symbol": "⚠️"},
+            {"id": "5355133243773435190", "symbol": "⚠️"},
+            {"id": "5325697487841822729", "symbol": "⚠️"},
+            {"id": "5377384949642976425", "symbol": "⚠️"},
+            {"id": "5188463524568926712", "symbol": "⚠️"},
+            {"id": "6170331333772973099", "symbol": "⚠️"},
+            {"id": "6096054779241306841", "symbol": "⚠️"},
+            {"id": "6116122159233374893", "symbol": "⚠️"},
+            {"id": "6118529316604089674", "symbol": "⚠️"},
+            {"id": "6118154245700065806", "symbol": "⚠️"},
+            {"id": "6116286132494800638", "symbol": "⚠️"},
+            {"id": "6116021957646359687", "symbol": "⚠️"},
+            {"id": "6115970035786717032", "symbol": "⚠️"},
+            {"id": "6118354532909980421", "symbol": "⚠️"},
+            {"id": "6116299309454467568", "symbol": "⚠️"},
+            {"id": "6116113431859828011", "symbol": "⚠️"},
+            {"id": "6118307670521813055", "symbol": "⚠️"},
+            {"id": "6118245140092952081", "symbol": "⚠️"},
+            {"id": "6269176896534091959", "symbol": "⚠️"},
+            {"id": "6269115585875939943", "symbol": "⚠️"},
+            {"id": "6293952226402505251", "symbol": "⚠️"},
+            {"id": "6294333155641922355", "symbol": "⚠️"},
+            {"id": "5244837092042750681", "symbol": "📈"},
+            {"id": "6242411025417637783", "symbol": "📈"},
+            {"id": "6307570399467016081", "symbol": "📈"},
+            {"id": "6307465086868918276", "symbol": "📈"},
+            {"id": "6057816852908742199", "symbol": "📈"},
+            {"id": "4956599758044005301", "symbol": "📈"},
+            {"id": "5197503331215361533", "symbol": "📈"},
+            {"id": "6170318672209384384", "symbol": "📈"},
+            {"id": "6032678155922181525", "symbol": "📈"},
+            {"id": "6222026913062326723", "symbol": "😱"},
+            {"id": "5454134361660081647", "symbol": "😱"},
+            {"id": "5449701482964198097", "symbol": "😱"},
+            {"id": "6298426688971736948", "symbol": "😱"},
+            {"id": "4956228595560219648", "symbol": "😱"},
+            {"id": "5267176629993481363", "symbol": "😱"},
+            {"id": "5424894443352236421", "symbol": "☺️"},
+            {"id": "5454359387881620533", "symbol": "☺️"},
+            {"id": "5355129137784706442", "symbol": "☺️"},
+            {"id": "6032602422763850951", "symbol": "☺️"},
+            {"id": "5220076425192678285", "symbol": "☺️"},
+            {"id": "5852478014129967218", "symbol": "☺️"},
+            {"id": "5976362269859122653", "symbol": "☺️"},
+            {"id": "5976530297569677161", "symbol": "☺️"},
+            {"id": "5976632891453476333", "symbol": "☺️"},
+            {"id": "5978755885197955083", "symbol": "☺️"},
+            {"id": "5976598931147067581", "symbol": "☺️"},
+            {"id": "5976544629875543840", "symbol": "☺️"},
+            {"id": "5976326759069520104", "symbol": "☺️"},
+            {"id": "5976672035785412232", "symbol": "☺️"},
+            {"id": "5979089561207181185", "symbol": "☺️"},
+            {"id": "5976487554055147676", "symbol": "☺️"},
+            {"id": "5978682084774907449", "symbol": "☺️"},
+            {"id": "5976322743275098459", "symbol": "☺️"},
+            {"id": "5979003584551849868", "symbol": "☺️"},
+            {"id": "5976614521878351679", "symbol": "☺️"},
+            {"id": "6118486122117994393", "symbol": "☺️"},
+            {"id": "6298608963088812117", "symbol": "☺️"}
+        ];
+
+        const emojiGrid = document.getElementById('emojiGrid');
+        const postText = document.getElementById('postText');
+
+        // গ্রিড তৈরি করা
+        emojiData.forEach(emoji => {
+            const card = document.createElement('div');
+            card.className = 'emoji-card';
+            card.innerText = emoji.symbol;
+            
+            card.onclick = () => {
+                // কার্সরের পজিশনে কাস্টম ইমোজি ট্যাগ পুশ করা
+                const startPos = postText.selectionStart;
+                const endPos = postText.selectionEnd;
+                const text = postText.value;
+                const emojiTag = `<tg-emoji emoji-id="${emoji.id}">${emoji.symbol}</tg-emoji>`;
+                
+                postText.value = text.substring(0, startPos) + emojiTag + text.substring(endPos);
+                postText.focus();
+                postText.selectionStart = postText.selectionEnd = startPos + emojiTag.length;
+            };
+            emojiGrid.appendChild(card);
+        });
+
+        // বটের কাছে ডাটা পাঠানো
+        document.getElementById('sendBtn').onclick = () => {
+            const data = postText.value;
+            if(!data.trim()) {
+                alert("Please write something first!");
+                return;
+            }
+            tg.sendData(data);
+        };
+    </script>
+</body>
+</html>
